@@ -1,0 +1,23 @@
+{
+  "name": "nokubase",
+  "version": "1.0.0",
+  "description": "Noku database api",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Noku-app/Nokubase.git"
+  },
+  "author": "Noku team",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Noku-app/Nokubase/issues"
+  },
+  "homepage": "https://github.com/Noku-app/Nokubase#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "mysql": "^2.18.1"
+  }
+}
