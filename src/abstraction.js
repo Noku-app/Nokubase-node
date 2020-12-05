@@ -1,5 +1,4 @@
 var mysql = require('mysql');
-
 var deletes = `DROP TABLE IF EXISTS hashed;`
 
 var creates = `CREATE TABLE IF NOT EXISTS hashed 
@@ -48,16 +47,16 @@ class database {
         this._con.query(creates);
     };
 
-    async insertHashed(email, hashed, flake, creation_time) {
+    async insertHashed(email, hashed, flake) {
         this._con.query(
             "INSERT INTO hashed VALUES (email, hashed, flake, creation_time)",
             [
                 email,
                 hashed,
                 flake,
-                creation_time
+                Date.now()
             ]
-        );  
+        );
     };
 
 };
