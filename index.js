@@ -1,5 +1,8 @@
 let databasemod = require("./src/abstraction").database
 let config = require("./config.json")
-console.log(config)
-let database = new databasemod({config: config})
-database.insertHashed("tobi@gm", "asish", 123)
+let database = new databasemod({config: config, clean: true})
+//database.insertHashed("tobi@gm", "asish", 123)
+let e = database.isEmailTaken("tobi", async (taken) => {console.log(taken)})
+database.registerUser("tobi", 12421)
+console.log(e)
+database.isEmailTaken("tobi", async (taken) => {console.log(taken)})

@@ -1,22 +1,10 @@
 var mysql = require('mysql');
-var deletes = `DROP TABLE IF EXISTS hashed;`
-
-var creates = `CREATE TABLE IF NOT EXISTS hashed 
-                    (
-                        email VARCHAR(50) NOT NULL,
-                        hashed VARCHAR(60) NOT NULL,
-                        flake BIGINT UNSIGNED NOT NULL,
-                        creation_time BIGINT UNSIGNED NOT NULL
-                    );
-                
-                CREATE TABLE IF NOT EXISTS cdn_images 
-                    (
-                        id INT NOT NULL AUTO_INCREMENT, 
-                        uid INT NOT NULL, 
-                        hash TINYTEXT NOT NULL,
-                        data MEDIUMTEXT NOT NULL, 
-                        PRIMARY KEY(id)
-                    );`
+var deletes = `DROP TABLE IF EXISTS tokens, registered`
+//Assign a more accurate typing to text, as its currently text
+var creates = [
+    `CREATE TABLE IF NOT EXISTS tokens (uid INT UNSIGNED NOT NULL, secret VARCHAR(60) NOT NULL, token VARCHAR(150) NOT NULL);`, 
+    `CREATE TABLE IF NOT EXISTS registered (uid INT UNSIGNED NOT NULL, email VARCHAR(50) NOT NULL, creation_time BIGINT UNSIGNED NOT NULL);`
+];
 
 class database {
     constructor(options={}) {
@@ -44,23 +32,75 @@ class database {
 
     async _clean() {
         this._con.query(deletes);
-        this._con.query(creates);
+        for (let index in creates) {
+            //console.log(creates[index])
+            this._con.query(
+                creates[index]
+            )
+        }
     };
 
-    async insertHashed(email, hashed, flake) {
+    async registerUser(email, uid) {
+        console.log(Date.now())
         this._con.query(
-            "INSERT INTO hashed VALUES (email, hashed, flake, creation_time)",
+            "INSERT INTO registered (email, uid, creation_time) VALUES (?, ?, ?)",
             [
                 email,
-                hashed,
-                flake,
+                uid,
                 Date.now()
             ]
         );
     };
 
+    async tokenUser(uid, secret, token) {
+        this._con.query(
+            "INSERT INTO tokens (uid, secret, token) VALUES (?, ?, ?)",
+            [
+                uid,
+                secret,
+                token
+            ]
+        );
+    };
+
+    async updateSecret(uid, secret) {
+        this._con.query(
+            "UPDATE tokens SET secret = ? WHERE uid = ?",
+            [
+                secret,
+                uid
+            ]
+        );
+    };
+
+    async updateToken(uid, token) {
+        this._con.query(
+            "UPDATE tokens SET token = ? WHERE uid = ?",
+            [
+                token,
+                uid
+            ]
+        );
+    };
+
+    async isEmailTaken(email, callback=async(taken)=>{}) {
+        let taken;
+        let query = this._con.query(
+            "SELECT email FROM registered WHERE email = ?",
+            [
+                email
+            ],
+            async (err, result, fields) => {
+                if (result.length == 0) {
+                    taken = false;
+                } else {
+                    taken = true;
+                } callback(taken);
+            }
+        );
+    };
 };
 
 module.exports = {
     database: database
-}
+};
