@@ -1,9 +1,29 @@
+const e = require('express');
 var mysql = require('mysql');
-var deletes = `DROP TABLE IF EXISTS tokens, registered`
+var deletes = `DROP TABLE IF EXISTS tokens, account`
 //Assign a more accurate typing to text, as its currently text
 var creates = [
-    `CREATE TABLE IF NOT EXISTS tokens (uid INT UNSIGNED NOT NULL, secret VARCHAR(60) NOT NULL, token VARCHAR(150) NOT NULL);`, 
-    `CREATE TABLE IF NOT EXISTS registered (uid INT UNSIGNED NOT NULL, email VARCHAR(50) NOT NULL, creation_time BIGINT UNSIGNED NOT NULL);`
+    `CREATE TABLE IF NOT EXISTS tokens 
+    (
+        uid INT UNSIGNED NOT NULL, 
+        secret VARCHAR(60) NOT NULL, 
+        token VARCHAR(150) NOT NULL
+    );`, 
+
+    `CREATE TABLE IF NOT EXISTS account 
+    (
+        uid INT UNSIGNED NOT NULL, 
+        email VARCHAR(50) NOT NULL, 
+        creation_time BIGINT UNSIGNED NOT NULL,
+        points INT UNSIGNED NOT NULL,
+        pfp VARCHAR(60),
+        age INT UNSIGNED,
+        nsfw BOOLEAN NOT NULL,
+        moderator BOOLEAN NOT NULL,
+        admin BOOLEAN NOT NULL,
+        developer BOOLEAN NOT NULL,
+        gender VARCHAR(8)
+    );`
 ];
 
 class database {
@@ -25,29 +45,34 @@ class database {
 
         if (options.clean == true) {
             this._clean();
-            console.log("Cleaning...")
-        }
-
+            console.log("Cleaning...");
+        };
     };
 
     async _clean() {
         this._con.query(deletes);
         for (let index in creates) {
-            //console.log(creates[index])
             this._con.query(
                 creates[index]
-            )
-        }
+            );
+        };
     };
 
-    async registerUser(email, uid) {
-        console.log(Date.now())
+    async registerUser(opts={}) {
         this._con.query(
-            "INSERT INTO registered (email, uid, creation_time) VALUES (?, ?, ?)",
+            "INSERT INTO account (email, uid, creation_time, points, pfp, age, nsfw, moderator, admin, developer, gender) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [
-                email,
-                uid,
-                Date.now()
+                opts.email,
+                opts.uid,
+                opts.creation_time || Date.now(),
+                opts.points || 0,
+                opts.pfp || null,
+                opts.age || null,
+                opts.nsfw || false,
+                opts.moderator || false,
+                opts.admin || false,
+                opts.developer|| false,
+                opts.gender || null
             ]
         );
     };
@@ -85,12 +110,16 @@ class database {
 
     async isEmailTaken(email, callback=async(taken)=>{}) {
         let taken;
-        let query = this._con.query(
-            "SELECT email FROM registered WHERE email = ?",
+        this._con.query(
+            "SELECT email FROM account WHERE email = ?",
             [
                 email
             ],
             async (err, result, fields) => {
+                if (!result) {
+                    taken = false
+                    return callback(taken)
+                } 
                 if (result.length == 0) {
                     taken = false;
                 } else {
