@@ -1,4 +1,22 @@
-const e = require('express');
+/*
+ * Copyright (c) 2020 Xemplar Softworks LLC (https://xemplarsoft.com)
+ * Copyright (c) 2020 Noku App
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+ 
 var mysql = require('mysql');
 var deletes = `DROP TABLE IF EXISTS tokens, account`
 //Assign a more accurate typing to text, as its currently text
@@ -22,7 +40,11 @@ var creates = [
         moderator BOOLEAN NOT NULL,
         admin BOOLEAN NOT NULL,
         developer BOOLEAN NOT NULL,
-        gender VARCHAR(8)
+        gender VARCHAR(8),
+        nick VARCHAR(20) NOT NULL,
+        bio VARCHAR(500),
+        background_color VARCHAR(10),
+        border_color VARCHAR(10)
     );`
 ];
 
@@ -60,7 +82,9 @@ class database {
 
     async registerUser(opts={}) {
         this._con.query(
-            "INSERT INTO account (email, uid, creation_time, points, pfp, age, nsfw, moderator, admin, developer, gender) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            `INSERT INTO account 
+            (email, uid, creation_time, points, pfp, age, nsfw, moderator, admin, developer, gender, nick, bio, background_color, border_color) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 opts.email,
                 opts.uid,
@@ -72,7 +96,11 @@ class database {
                 opts.moderator || false,
                 opts.admin || false,
                 opts.developer|| false,
-                opts.gender || null
+                opts.gender || null,
+                opts.nick,
+                opts.bio || null,
+                opts.background_color || null,
+                opts.border_color || null
             ]
         );
     };
