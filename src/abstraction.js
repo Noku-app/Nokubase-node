@@ -23,25 +23,26 @@ var deletes = `DROP TABLE IF EXISTS tokens, account`
 var creates = [
     `CREATE TABLE IF NOT EXISTS tokens 
     (
-        uid INT UNSIGNED NOT NULL, 
+        uid BIGINT UNSIGNED NOT NULL, 
         secret VARCHAR(60) NOT NULL, 
         token VARCHAR(150) NOT NULL
     );`, 
 
     `CREATE TABLE IF NOT EXISTS account 
     (
-        uid INT UNSIGNED NOT NULL, 
+        uid BIGINT UNSIGNED NOT NULL, 
         email VARCHAR(50) NOT NULL, 
         creation_time BIGINT UNSIGNED NOT NULL,
-        points INT UNSIGNED NOT NULL,
+        points INT UNSIGNED,
         pfp VARCHAR(60),
         age INT UNSIGNED,
-        nsfw BOOLEAN NOT NULL,
-        moderator BOOLEAN NOT NULL,
-        admin BOOLEAN NOT NULL,
-        developer BOOLEAN NOT NULL,
+        nsfw BOOLEAN,
+        moderator BOOLEAN,
+        admin BOOLEAN,
+        developer BOOLEAN,
         gender VARCHAR(8),
         nick VARCHAR(20) NOT NULL,
+        realnick VARCHAR(20) NOT NULL,
         bio VARCHAR(500),
         background_color VARCHAR(10),
         border_color VARCHAR(10)
@@ -80,27 +81,27 @@ class database {
         };
     };
 
+    async updateAccount(uid, key, value) {
+        this._con.query(
+            `UPDATE account SET ${key} = ? WHERE uid = ?`,
+            [
+                value,
+                uid
+            ]
+        )
+    }
+
     async registerUser(opts={}) {
         this._con.query(
             `INSERT INTO account 
-            (email, uid, creation_time, points, pfp, age, nsfw, moderator, admin, developer, gender, nick, bio, background_color, border_color) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            (email, uid, creation_time, nick, realnick) 
+            VALUES (?, ?, ?, ?, ?)`,
             [
-                opts.email,
+                opts.email.toLowerCase(),
                 opts.uid,
                 opts.creation_time || Date.now(),
-                opts.points || 0,
-                opts.pfp || null,
-                opts.age || null,
-                opts.nsfw || false,
-                opts.moderator || false,
-                opts.admin || false,
-                opts.developer|| false,
-                opts.gender || null,
                 opts.nick,
-                opts.bio || null,
-                opts.background_color || null,
-                opts.border_color || null
+                opts.nick.toLowerCase()
             ]
         );
     };
@@ -141,7 +142,28 @@ class database {
         this._con.query(
             "SELECT email FROM account WHERE email = ?",
             [
-                email
+                email.toLowerCase()
+            ],
+            async (err, result, fields) => {
+                if (!result) {
+                    taken = false
+                    return callback(taken)
+                } 
+                if (result.length == 0) {
+                    taken = false;
+                } else {
+                    taken = true;
+                } callback(taken);
+            }
+        );
+    };
+
+    async isNickTaken(nick, callback=async(taken)=>{}) {
+        let taken;
+        this._con.query(
+            "SELECT realnick FROM account WHERE realnick = ?",
+            [
+                nick.toLowerCase()
             ],
             async (err, result, fields) => {
                 if (!result) {
