@@ -1,5 +1,4 @@
 /*
- * Copyright (c) 2020 Xemplar Softworks LLC (https://xemplarsoft.com)
  * Copyright (c) 2020 Noku App
  *
  * This program is free software: you can redistribute it and/or modify

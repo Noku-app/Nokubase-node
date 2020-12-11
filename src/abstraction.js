@@ -1,5 +1,4 @@
 /*
- * Copyright (c) 2020 Xemplar Softworks LLC (https://xemplarsoft.com)
  * Copyright (c) 2020 Noku App
  *
  * This program is free software: you can redistribute it and/or modify
@@ -137,7 +136,23 @@ class database {
         );
     };
 
-    async isEmailTaken(email, callback=async(taken)=>{}) {
+    async call(callback=null, args) {
+        if (callback) {
+            (
+                async() => {
+                    callback(...args);
+                }
+            )();
+        } else {
+            console.warn("Missing a callback.")
+        }
+    }
+
+    async getUIDbyToken(token, callback=null) {
+        let uid;
+    }
+
+    async isEmailTaken(email, callback=null) {
         let taken;
         this._con.query(
             "SELECT email FROM account WHERE email = ?",
@@ -147,18 +162,18 @@ class database {
             async (err, result, fields) => {
                 if (!result) {
                     taken = false
-                    return callback(taken)
+                    return this.call(callback, [taken,])
                 } 
                 if (result.length == 0) {
                     taken = false;
                 } else {
                     taken = true;
-                } callback(taken);
+                } this.call(callback, [taken,])
             }
         );
     };
 
-    async isNickTaken(nick, callback=async(taken)=>{}) {
+    async isNickTaken(nick, callback=null) {
         let taken;
         this._con.query(
             "SELECT realnick FROM account WHERE realnick = ?",
@@ -168,13 +183,13 @@ class database {
             async (err, result, fields) => {
                 if (!result) {
                     taken = false
-                    return callback(taken)
+                    return this.call(callback, [taken,])
                 } 
                 if (result.length == 0) {
                     taken = false;
                 } else {
                     taken = true;
-                } callback(taken);
+                } this.call(callback, [taken,])
             }
         );
     };
