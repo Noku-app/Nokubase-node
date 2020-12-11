@@ -17,6 +17,7 @@
 
  
 var mysql = require('mysql');
+const { threadId } = require('worker_threads');
 var deletes = `DROP TABLE IF EXISTS tokens, account`
 //Assign a more accurate typing to text, as its currently text
 var creates = [
@@ -150,6 +151,19 @@ class database {
 
     async getUIDbyToken(token, callback=null) {
         let uid;
+        this._con.query(
+            "SELECT uid FROM tokens WHERE token = ?",
+            [
+                token
+            ],
+            async (err, result, fields) => {
+                if (!result) {
+                    this.call(callback, [null,])
+                } else {
+                    console.log(result);
+                }
+            }
+        )
     }
 
     async isEmailTaken(email, callback=null) {
