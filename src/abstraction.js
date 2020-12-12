@@ -159,11 +159,67 @@ class database {
                 if (!result) {
                     this.call(callback, [null,])
                 } else {
-                    console.log(result);
-                }
+                    if (result[0]) {
+                        if (result[0].uid) {
+                            this.call(callback, [result[0].uid,]);
+                        } else {
+                            this.call(callback, [null,])
+                        };
+                    } else {
+                        this.call(callback, [null,]);
+                    };
+                };
+            }
+        );
+    };
+
+    async getSecretbyUID(uid, callback=null) {
+        this._con.query(
+            "SELECT secret FROM tokens WHERE uid = ?",
+            [
+                uid,
+            ],
+            async (err, result, fields) => {
+                if (!result) {
+                    this.call(callback, [null,])
+                } else {
+                    if (result[0]) {
+                        if (result[0].secret) {
+                            this.call(callback, [result[0].secret,]);
+                        } else {
+                            this.call(callback, [null,])
+                        };
+                    } else {
+                        this.call(callback, [null,]);
+                    };
+                };
             }
         )
-    }
+    };
+
+    async getUIDbyEmail(email, callback=null) {
+        this._con.query(
+            "SELECT uid FROM account WHERE email = ?",
+            [
+                email,
+            ],
+            async (err, result, fields) => {
+                if (!result) {
+                    this.call(callback, [null,])
+                } else {
+                    if (result[0]) {
+                        if (result[0].uid) {
+                            this.call(callback, [result[0].uid,]);
+                        } else {
+                            this.call(callback, [null,])
+                        };
+                    } else {
+                        this.call(callback, [null,]);
+                    };
+                };
+            }
+        );
+    };
 
     async isEmailTaken(email, callback=null) {
         let taken;
