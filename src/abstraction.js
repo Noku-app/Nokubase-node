@@ -201,7 +201,7 @@ class database {
     }
 
     async getUIDbyToken(token, callback=null) {
-        let uid;
+
         this._con.query(
             "SELECT uid FROM tokens WHERE token = ?",
             [
