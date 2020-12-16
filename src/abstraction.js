@@ -16,6 +16,7 @@
  */
 
  
+const { response } = require('express');
 var mysql = require('mysql');
 var deletes = `DROP TABLE IF EXISTS tokens, account`
 //Assign a more accurate typing to text, as its currently text
@@ -146,6 +147,57 @@ class database {
         } else {
             console.warn("Missing a callback.")
         }
+    };
+
+    async userByToken(token, callback) {
+
+        const uidcallback = async (uid) => {
+            if (!uid) {
+                this.call(callback, [null,])
+            } else {
+                this.userByUID(
+                    uid,
+                    async (user) => {
+                        if (!user) {
+                            this.call(callback, [null,])
+                        } else {
+                            this.call(callback, user)
+                        }
+                    } 
+                );
+            };
+        };
+
+        this.getUIDbyToken(
+            token, 
+            async (uid) => {
+                if (!uid) {
+                    this.call(uidcallback, [null,])
+                } else {
+                    this.call(uidcallback, uid);
+                }
+            }
+        );
+    };
+
+    async userByUID(uid, callback) {
+        this._con.query(
+            "SELECT * FROM account WHERE uid = ?",
+            [
+                uid,
+            ],
+            async (err, result, fields) => {
+                if (!result) {
+                    this.call(callback, [null,])
+                } else {
+                    if (result[0]) {
+                        this.call(callback, [result[0],]);
+                    } else {
+                        this.call(callback, [null,]);
+                    };
+                };
+            }
+        );
     }
 
     async getUIDbyToken(token, callback=null) {
